@@ -28,17 +28,19 @@ class ModelFactory:
         else:
             raise ValueError(f"Model '{model_name}' not recognized!")
 
+#Loads the data from the excel defined by file_name varible this is then loaded into a pandas dataframe
 def load_data(file_name):
     return pd.read_excel(file_name)
 
 def preprocess_data(data):
-# Check for missing values
+# Check for missing values and raises a error if any missing values are found.
     if data.isnull().any().any():
         raise ValueError("The data contains missing values. Please ensure the data is cleaned before processing.")
-
+#Seperates the features X and the target varible Y
     X = data.drop(['Customer Name', 'Customer e-mail', 'Country', 'Car Purchase Amount'], axis=1)
     Y = data['Car Purchase Amount']
     
+#Scaling the features and the target variable using Min-Max scaling.
     sc = MinMaxScaler()
     X_scaled = sc.fit_transform(X)
     
@@ -48,9 +50,11 @@ def preprocess_data(data):
     
     return X_scaled, y_scaled, sc, sc1
 
+#Splits the data into training and testing data from scikit-learn
 def split_data(X_scaled, y_scaled):
     return train_test_split(X_scaled, y_scaled, test_size=0.2, random_state=42)
 
+#This function trains a set of regression models specified by the model names list using the training data
 def train_models(X_train, y_train):
     model_names = [
         'Linear Regression',
@@ -69,19 +73,21 @@ def train_models(X_train, y_train):
         models[name] = model
         #display when model trained successfully
         print(f"{name} trained successfully.")
-        
+#It returns a dictionary where keys are model names, and values are the trained model objects.       
     return models
 
-
+#This function evaluates the models by calculating the root mean squared error 
+# RMSE for each model using the testing data
 def evaluate_models(models, X_test, y_test):
     rmse_values = {}
     
     for name, model in models.items():
         preds = model.predict(X_test)
         rmse_values[name] = mean_squared_error(y_test, preds, squared=False)
-        
+#Returns a dictanary of the where keys are the model names, and values and RMSE scores   
     return rmse_values
 
+#
 def plot_model_performance(rmse_values):
     plt.figure(figsize=(10,7))
     models = list(rmse_values.keys())
